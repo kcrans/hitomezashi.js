@@ -13,7 +13,7 @@ canvas {
       width: 60px;
       height: 34px;
     }
-
+    .switch input {
       display: none;
     }
 
@@ -47,4 +47,4 @@ canvas {
 
     input:checked + .slider:before {
       transform: translateX(26px);
-    i}
+    }
