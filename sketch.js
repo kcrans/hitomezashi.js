@@ -192,7 +192,7 @@ function draw() {
 function onSliderMove() {
     alphax = horizontalSlider.value();
     alphay = verticalSlider.value()
-    clearCells();
+    clearCells(cells);
     addPatternInfo(cells, alphax, alphay);
     colorCells(cells);
     clear();
