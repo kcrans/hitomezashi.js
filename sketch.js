@@ -6,7 +6,7 @@ function randBinary(alpha) {
     // and 1 with probability 1 - alpha
     x = Math.random();
     if (x < alpha) {
-        return 0;
+      return 0;
     }
     else {
         return 1;
@@ -45,7 +45,7 @@ function clearCells(cells) {
             cell.d = false;
             cell.l = false;
             cell.r = false;
-            cell.color = undefined;
+            cell.region = undefined;
     }
   }
 }
@@ -77,65 +77,86 @@ function addPatternInfo(cells, alphax, alphay) {
     }
 }
 
-
-function colorCells(cells) {
-    const colored = new Set();
-    const getSize = (x, y) => {
+// The regions we need to color are determined by the areas formed by the dashes.
+// But how do we assign colors to different regions?
+// One way is to create a mapping between region sizes (number of cells in same region)
+// and colors. In this case for each cell we will store its region size in the
+// "region" field. Later on we will map each of these sizes to a brightness value
+// such that smaller regions will be colored lighter than larger regions. 
+function assignRegionSizes(cells) {
+  const visited = new Set();
+  
+  const getSize = (x, y) => {
+    // If the coordinates are outside the bounds of the matrix,
+    // or if the cell has already been visited.
     if (x < 0 || y < 0 || 
         y >= numYCells || x >= numXCells ||
-        colored.has(`${x} ${y}`)) {
+        visited.has(`${x} ${y}`)) {
       return 0;
     }
     
     let size = 0;
-    colored.add(`${x} ${y}`);
+    visited.add(`${x} ${y}`);
 
+    // If not blocked by a line, explore the region further.
     if (!cells[y][x].u) {
-      size = max(size, getSize(x, y - 1));
+      size = Math.max(size, getSize(x, y - 1));
     }
     if (!cells[y][x].d) {
-      size = max(size, getSize(x, y + 1));
+      size = Math.max(size, getSize(x, y + 1));
     }
     if (!cells[y][x].l) {
-      size = max(size, getSize(x - 1, y));
+      size = Math.max(size, getSize(x - 1, y));
     }
     if (!cells[y][x].r) {
-      size = max(size, getSize(x + 1, y));
+      size = Math.max(size, getSize(x + 1, y));
     }
 
     return size + 1;
   };
 
-  const floodFill = (x, y, color) => {
+  const floodFill = (x, y, regionSize) => {
     if (x < 0 || y < 0 ||
         y >= numYCells || x >= numXCells ||
-        cells[y][x].color !== undefined) {
+        cells[y][x].region !== undefined) {
       return 0;
     }
 
-    cells[y][x].color = color;
-
-    if (!cells[y][x].u) {
-      floodFill(x, y - 1, color);
-    }
-    if (!cells[y][x].d) {
-      floodFill(x, y + 1, color);
-    }
-    if (!cells[y][x].l) {
-      floodFill(x - 1, y, color);
-    }
-    if (!cells[y][x].r) {
-      floodFill(x + 1, y, color);
+    const stack = [[x, y]];
+    while (stack.length > 0) {
+      const [cx, cy] = stack.pop();
+      // If we've already colored the cell, skip it
+      if (cells[cy][cx].region !== undefined) continue;
+      
+      cells[cy][cx].region = regionSize;
+      
+      if (cy > 0 && !cells[cy][cx].u) {
+        stack.push([cx, cy - 1]);
+      }
+      if (cy < numYCells - 1 && !cells[cy][cx].d) {
+        stack.push([cx, cy + 1]);
+      }
+      if (cx > 0 && !cells[cy][cx].l) {
+        stack.push([cx - 1, cy]);
+      }
+      if (cx < numXCells - 1 && !cells[cy][cx].r) {
+        stack.push([cx + 1, cy]);
+      }
     }
   };
 
   for (let i = 0; i < numYCells; i++) {
     for (let j = 0; j < numXCells; j++) {
-      const color = 180 - getSize(j, i);
-      floodFill(j, i, color);
+      const regionSize = getSize(j, i);
+      floodFill(j, i, regionSize);
     }
   }
 }
+
+let horizontalSlider;
+let verticalSlider;
+let lineColorPicker;
+let fillColorPicker;
 
 function setup() {
     createCanvas(w, h);
@@ -144,6 +165,8 @@ function setup() {
     // Starting values for probabilities
     let alphax = 0.5;
     let alphay = 0.5;
+
+    // Sliders that change randomness
     horizontalSlider = createSlider(0, 1, alphax, 0.05);
     horizontalSlider.position(10, 10);
     horizontalSlider.size(80);
@@ -157,23 +180,33 @@ function setup() {
     let toggleSwitch = select('#themeToggle');
     toggleSwitch.changed(toggleMode);
 
+    lineColorPicker = createColorPicker('#ff0000');
+    lineColorPicker.position(w/2 - 30, h + 10);
+    lineColorPicker.input(updateLColor);
+
+    fillColorPicker = createColorPicker('#000');
+    fillColorPicker.position(w/20 + 40, h + 10);
+    //fillColorPicker.input(updateFColor);
+
     addPatternInfo(cells, alphax, alphay);
-    colorCells(cells);
+    assignRegionSizes(cells);
 }
 
-let addColor = true;
+let fillCells = true;
+let lineColor = 0;
+let fillColor;
 
 function draw() {
     for (let i = 0; i < numYCells; i++) {
         for (let j = 0; j < numXCells; j++) {
             const y = i * cellSize + 0.5;
             const x = j * cellSize + 0.5;
-            if (addColor) {
-                fill(cells[i][j].color);
+            if (fillCells) {
+                fill(180 - cells[i][j].region);
                 noStroke();
                 rect(x, y, cellSize + 1, cellSize + 1);
-                stroke(0);
-            }
+             }
+            stroke(lineColor);
             if (cells[i][j].u) {
                 line(x, y, x + cellSize, y);
             }
@@ -194,13 +227,19 @@ function onSliderMove() {
     alphay = verticalSlider.value()
     clearCells(cells);
     addPatternInfo(cells, alphax, alphay);
-    colorCells(cells);
+    assignRegionSizes(cells);
     clear();
     redraw();
 }
 
 function toggleMode() {
-    addColor = !addColor;
+    fillCells = !fillCells;
     clear();
     redraw();
+}
+
+function updateLColor() {
+  lineColor = lineColorPicker.value();
+  clear();
+  redraw();
 }
