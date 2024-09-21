@@ -83,6 +83,7 @@ function addPatternInfo(cells, alphax, alphay) {
 // and colors. In this case for each cell we will store its region size in the
 // "region" field. Later on we will map each of these sizes to a brightness value
 // such that smaller regions will be colored lighter than larger regions. 
+let maxRank;
 function assignRegionSizes(cells) {
   const visited = new Set();
   
@@ -96,23 +97,29 @@ function assignRegionSizes(cells) {
     }
     
     let size = 0;
-    visited.add(`${x} ${y}`);
+    const stack = [[x, y]];
+    while (stack.length > 0) {
+      const [cx, cy] = stack.pop();
+      if (visited.has(`${cx} ${cy}`)) continue;
 
-    // If not blocked by a line, explore the region further.
-    if (!cells[y][x].u) {
-      size = Math.max(size, getSize(x, y - 1));
-    }
-    if (!cells[y][x].d) {
-      size = Math.max(size, getSize(x, y + 1));
-    }
-    if (!cells[y][x].l) {
-      size = Math.max(size, getSize(x - 1, y));
-    }
-    if (!cells[y][x].r) {
-      size = Math.max(size, getSize(x + 1, y));
+      visited.add(`${cx} ${cy}`);
+      size++;
+      
+      if (cy > 0 && !cells[cy][cx].u) {
+        stack.push([cx, cy - 1]);
+      }
+      if (cy < numYCells - 1 && !cells[cy][cx].d) {
+        stack.push([cx, cy + 1]);
+      }
+      if (cx > 0 && !cells[cy][cx].l) {
+        stack.push([cx - 1, cy]);
+      }
+      if (cx < numXCells - 1 && !cells[cy][cx].r) {
+        stack.push([cx + 1, cy]);
+      }
     }
 
-    return size + 1;
+    return size;
   };
 
   const floodFill = (x, y, regionSize) => {
@@ -144,13 +151,34 @@ function assignRegionSizes(cells) {
       }
     }
   };
-
+  // Let's keep track of all of the different region sizes
+  // while we floodfill the grid.
+  let uniqueRegionSizes = new Set();
   for (let i = 0; i < numYCells; i++) {
     for (let j = 0; j < numXCells; j++) {
       const regionSize = getSize(j, i);
+      if (regionSize !== 0) {
+        uniqueRegionSizes.add(regionSize);
+      }
       floodFill(j, i, regionSize);
     }
   }
+  // Let's now create a mapping from the region size of a cell's
+  // region to the ranking of the region size out of all the sizes
+  // we've seen. Smaller sizes correspond to lower ranks.
+  let sortedSizes = Array.from(uniqueRegionSizes).sort((a, b) => a - b);
+  let regionSizeToRank = new Map();
+  for (let i = 0; i < sortedSizes.length; i++) {
+    regionSizeToRank.set(sortedSizes[i], i + 1);
+  } 
+  // Finally let's overwrite the region size field for each cell 
+  // and replace it with the rank of its region.
+  for (let i = 0; i < numYCells; i++) {
+    for (let j = 0; j < numXCells; j++) {
+      cells[i][j].region = regionSizeToRank.get(cells[i][j].region); 
+    }
+  }
+  maxRank = regionSizeToRank.size;
 }
 
 let horizontalSlider;
@@ -186,15 +214,16 @@ function setup() {
 
     fillColorPicker = createColorPicker('#000');
     fillColorPicker.position(w/20 + 40, h + 10);
-    //fillColorPicker.input(updateFColor);
+    fillColorPicker.input(updateFColor);
 
     addPatternInfo(cells, alphax, alphay);
     assignRegionSizes(cells);
+    draw();
 }
 
 let fillCells = true;
 let lineColor = 0;
-let fillColor;
+let fillHue = 220;
 
 function draw() {
     for (let i = 0; i < numYCells; i++) {
@@ -202,9 +231,12 @@ function draw() {
             const y = i * cellSize + 0.5;
             const x = j * cellSize + 0.5;
             if (fillCells) {
-                fill(180 - cells[i][j].region);
-                noStroke();
-                rect(x, y, cellSize + 1, cellSize + 1);
+              colorMode(HSB, 255);
+              let rank = cells[i][j].region;  
+              let brightness = map(rank, 1, maxRank, 255, 100);
+              fill(fillHue, 255, brightness);
+              noStroke();
+              rect(x, y, cellSize + 1, cellSize + 1);
              }
             stroke(lineColor);
             if (cells[i][j].u) {
@@ -233,13 +265,18 @@ function onSliderMove() {
 }
 
 function toggleMode() {
-    fillCells = !fillCells;
-    clear();
-    redraw();
+  fillCells = !fillCells;
+  clear();
+  redraw();
 }
 
 function updateLColor() {
   lineColor = lineColorPicker.value();
   clear();
   redraw();
+}
+
+function updateFColor() {
+  let chosenColor = fillColorPicker.value();
+  fillHue = hue(chosenColor);
 }
