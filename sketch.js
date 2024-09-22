@@ -279,4 +279,6 @@ function updateLColor() {
 function updateFColor() {
   let chosenColor = fillColorPicker.value();
   fillHue = hue(chosenColor);
+  clear();
+  redraw();
 }
