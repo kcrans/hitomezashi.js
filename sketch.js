@@ -1,5 +1,32 @@
+const toolbarPopup = document.getElementById('toolbar-popup');
+const toolbarToggle = document.getElementById('toolbar-toggle');
+
+// Toggle toolbar visibility
+toolbarToggle.addEventListener('click', () => {
+  toolbarPopup.classList.toggle('hidden');
+  
+  // Optionally, change the button text/icon to indicate the state
+  if (toolbarPopup.classList.contains('hidden')) {
+    toolbarToggle.textContent = '≡'; // Show toolbar icon
+  } else {
+    toolbarToggle.textContent = '✖'; // Hide toolbar icon
+  }
+});
+
+function getAvailableHeight() {
+  const toolBar = document.querySelectorAll('.toolbar');
+  let toolBarHeight = 0;
+
+  toolBar.forEach(element => {
+    toolBarHeight += element.offsetHeight;
+  });
+
+  return window.innerHeight - toolBarHeight;
+}
+
 const w = document.documentElement.clientWidth;
-const h = document.documentElement.clientHeight;
+const h = document.documentElement.clientHeight;//getAvailableHeight();
+console.log(h, w, window.innerHeight)
 
 function randBinary(alpha) {
     // Returns 0 with probability alpha
@@ -182,39 +209,44 @@ function assignRegionSizes(cells) {
 }
 
 let horizontalSlider;
+let horizontalProbDisplay; 
 let verticalSlider;
+let verticalProbDisplay;
 let lineColorPicker;
 let fillColorPicker;
+let fillSaturationPicker;
+// Starting values for probabilities
+let alphax = 0.5;
+let alphay = 0.5;
+
 
 function setup() {
     createCanvas(w, h);
+    colorMode(HSB, 255);
     noLoop();
 
-    // Starting values for probabilities
-    let alphax = 0.5;
-    let alphay = 0.5;
-
     // Sliders that change randomness
-    horizontalSlider = createSlider(0, 1, alphax, 0.05);
-    horizontalSlider.position(10, 10);
-    horizontalSlider.size(80);
-    horizontalSlider.input(onSliderMove)
-    verticalSlider = createSlider(0, 1, alphay, 0.05)
-    verticalSlider.position(10-40, 10+40);
-    verticalSlider.size(80);
-    verticalSlider.style('transform', 'rotate(270deg)');
+    horizontalSlider = select("#horizontal-prob");
+    horizontalSlider.input(onSliderMove);
+    horizontalProbDisplay = select('#horizontal-prob-value');
+    verticalSlider = select("#vertical-prob");
     verticalSlider.input(onSliderMove)
+    verticalProbDisplay = select('#vertical-prob-value');
 
     let toggleSwitch = select('#themeToggle');
     toggleSwitch.changed(toggleMode);
 
-    lineColorPicker = createColorPicker('#ff0000');
-    lineColorPicker.position(w/2 - 30, h + 10);
-    lineColorPicker.input(updateLColor);
+    lineColorPicker = select('#line-color')
+    lineColorPicker.changed(updateLColor);
 
-    fillColorPicker = createColorPicker('#000');
-    fillColorPicker.position(w/20 + 40, h + 10);
-    fillColorPicker.input(updateFColor);
+    let refreshSwitch = select('#refresh');
+    refreshSwitch.mousePressed(onRefresh);
+
+    fillColorPicker = select('#hue')
+    fillColorPicker.changed(updateFColor);
+
+    fillSaturationPicker = select('#saturation');
+    fillSaturationPicker.changed(updateFSaturation);
 
     addPatternInfo(cells, alphax, alphay);
     assignRegionSizes(cells);
@@ -222,8 +254,10 @@ function setup() {
 }
 
 let fillCells = true;
-let lineColor = 0;
-let fillHue = 220;
+let grayscale = false;
+let lineColor = '#000000';
+let fillHue = 220; // Default hue to start with
+let fillSaturation = 255;
 
 function draw() {
     for (let i = 0; i < numYCells; i++) {
@@ -231,13 +265,13 @@ function draw() {
             const y = i * cellSize + 0.5;
             const x = j * cellSize + 0.5;
             if (fillCells) {
-              colorMode(HSB, 255);
               let rank = cells[i][j].region;  
               let brightness = map(rank, 1, maxRank, 255, 100);
-              fill(fillHue, 255, brightness);
+              fill(fillHue, fillSaturation, brightness);
               noStroke();
               rect(x, y, cellSize + 1, cellSize + 1);
              }
+            console.log(lineColor);
             stroke(lineColor);
             if (cells[i][j].u) {
                 line(x, y, x + cellSize, y);
@@ -254,9 +288,19 @@ function draw() {
         }
     }
 }
+function onRefresh() {
+  clearCells(cells);
+  addPatternInfo(cells, alphax, alphay);
+  assignRegionSizes(cells);
+  clear();
+  redraw();
+}
+
 function onSliderMove() {
-    alphax = horizontalSlider.value();
-    alphay = verticalSlider.value()
+    alphax = parseFloat(horizontalSlider.value());
+    alphay = parseFloat(verticalSlider.value());
+    horizontalProbDisplay.html(alphax.toFixed(2));
+    verticalProbDisplay.html(alphay.toFixed(2));
     clearCells(cells);
     addPatternInfo(cells, alphax, alphay);
     assignRegionSizes(cells);
@@ -277,8 +321,15 @@ function updateLColor() {
 }
 
 function updateFColor() {
-  let chosenColor = fillColorPicker.value();
-  fillHue = hue(chosenColor);
+  //let chosenColor = parseFloat(fillColorPicker.value());
+  //fillHue = hue(chosenColor);
+  fillHue = parseFloat(fillColorPicker.value()); 
+  clear();
+  redraw();
+}
+
+function updateFSaturation() {
+  fillSaturation = parseFloat(fillSaturationPicker.value());
   clear();
   redraw();
 }
