@@ -222,7 +222,7 @@ let alphay = 0.5;
 
 function setup() {
     createCanvas(w, h);
-    colorMode(HSB, 255);
+    colorMode(HSB, 360, 100, 255);
     noLoop();
 
     // Sliders that change randomness
@@ -242,11 +242,13 @@ function setup() {
     let refreshSwitch = select('#refresh');
     refreshSwitch.mousePressed(onRefresh);
 
-    fillColorPicker = select('#hue')
+    fillColorPicker = select('#hue-slider')
     fillColorPicker.changed(updateFColor);
 
-    fillSaturationPicker = select('#saturation');
+    fillSaturationPicker = select('#saturation-slider');
     fillSaturationPicker.changed(updateFSaturation);
+    // Set the color for the saturation gradient
+    updateSaturationSlider(fillHue);
 
     addPatternInfo(cells, alphax, alphay);
     assignRegionSizes(cells);
@@ -256,8 +258,8 @@ function setup() {
 let fillCells = true;
 let grayscale = false;
 let lineColor = '#000000';
-let fillHue = 220; // Default hue to start with
-let fillSaturation = 255;
+let fillHue = 310; // Default hue to start with
+let fillSaturation = 100;    // Default saturation
 
 function draw() {
     for (let i = 0; i < numYCells; i++) {
@@ -323,7 +325,9 @@ function updateLColor() {
 function updateFColor() {
   //let chosenColor = parseFloat(fillColorPicker.value());
   //fillHue = hue(chosenColor);
-  fillHue = parseFloat(fillColorPicker.value()); 
+  fillHue = parseFloat(fillColorPicker.value());
+  console.log(fillHue);
+  updateSaturationSlider(fillHue);
   clear();
   redraw();
 }
@@ -332,4 +336,8 @@ function updateFSaturation() {
   fillSaturation = parseFloat(fillSaturationPicker.value());
   clear();
   redraw();
+}
+
+function updateSaturationSlider(hueVal) {
+  fillSaturationPicker.style('background', `linear-gradient(to right, hsl(${hueVal}, 0%, 50%), hsl(${hueVal}, 100%, 50%))`);
 }
