@@ -1,5 +1,13 @@
 const toolbarPopup = document.getElementById('toolbar-popup');
 const toolbarToggle = document.getElementById('toolbar-toggle');
+const pencilIcon = document.getElementById('pencil-icon');
+const closeIcon = document.getElementById('close-icon');
+
+function closeToolbar() {
+  toolbarPopup.classList.add('hidden'); // Always close the toolbar
+  pencilIcon.style.display = 'block';
+  closeIcon.style.display = 'none';
+}
 
 // Toggle toolbar visibility
 toolbarToggle.addEventListener('click', () => {
@@ -7,9 +15,17 @@ toolbarToggle.addEventListener('click', () => {
   
   // Optionally, change the button text/icon to indicate the state
   if (toolbarPopup.classList.contains('hidden')) {
-    toolbarToggle.textContent = '≡'; // Show toolbar icon
+    pencilIcon.style.display = 'block';
+    closeIcon.style.display = 'none';
   } else {
-    toolbarToggle.textContent = '✖'; // Hide toolbar icon
+    pencilIcon.style.display = 'none';
+    closeIcon.style.display = 'block';
+  }
+});
+
+document.addEventListener('click', (event) => {
+  if (!toolbarPopup.contains(event.target) && !toolbarToggle.contains(event.target)) {
+    closeToolbar(); // Always close the toolbar
   }
 });
 
@@ -239,7 +255,7 @@ function setup() {
     lineColorPicker = select('#line-color')
     lineColorPicker.changed(updateLColor);
 
-    let refreshSwitch = select('#refresh');
+    let refreshSwitch = select('#refresh-button');
     refreshSwitch.mousePressed(onRefresh);
 
     fillColorPicker = select('#hue-slider')

@@ -11,11 +11,23 @@
     <main>
     </main>
     <!-- Toolbar Toggle Button -->
-<div id="toolbar-toggle" class="grab-icon">≡</div>
-
+    <button id="toolbar-toggle" class="icon-button">
+      <!-- License: CC Attribution. Made by CyCraft: https://github.com/CyCraft/pepicons -->
+      <svg id="pencil-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 311.012 311.012" width="24" height="24">
+        <path d="M302.184 55.993 255.019 8.829a30.14 30.14 0 0 0-42.627 0L14.959 206.259a12.1 12.1 0 0 0-3.438 6.937L.11 297.265a12.115 12.115 0 0 0 13.634 13.634l84.07-11.411a12.1 12.1 0 0 0 6.937-3.438L302.184 98.62a30.14 30.14 0 0 0 0-42.627M90.507 276.028l-64.247 8.72 8.721-64.246 139.906-139.9 55.525 55.526ZM285.05 81.487l-37.5 37.5-55.526-55.525 37.5-37.5a5.913 5.913 0 0 1 8.362 0l47.165 47.164a5.91 5.91 0 0 1 0 8.361Z" fill="currentColor"/>
+      </svg>
+      <svg id="close-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor" style="display: none;">
+        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
 <!-- Floating Toolbar -->
 <div id="toolbar-popup" class="toolbar-popup hidden">
   <!-- Toolbar content: sliders, color picker, etc. -->
+
+  <button id="refresh-button" class="toolbar-icon-button">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" id="refresh-icon"><path d="M3.06957 10.8763C3.62331 6.43564 7.40967 3 12 3C14.2824 3 16.4028 3.85067 18.0118 5.25439V4C18.0118 3.44772 18.4595 3 19.0118 3C19.5641 3 20.0118 3.44772 20.0118 4V8C20.0118 8.55228 19.5641 9 19.0118 9H15C14.4477 9 14 8.55228 14 8C14 7.44772 14.4477 7 15 7H16.9571C15.6757 5.76379 13.9101 5 12 5C8.43108 5 5.48466 7.67174 5.0542 11.1237C4.98586 11.6718 4.48619 12.0607 3.93815 11.9923C3.39011 11.924 3.00123 11.4243 3.06957 10.8763ZM20.0618 12.0077C20.6099 12.076 20.9988 12.5757 20.9304 13.1237C20.3767 17.5644 16.5903 21 12 21C9.72322 21 7.60762 20.1535 5.99999 18.7559V20C5.99999 20.5523 5.55228 21 4.99999 21C4.44771 21 3.99999 20.5523 3.99999 20V16C3.99999 15.4477 4.44771 15 4.99999 15H8.99999C9.55228 15 9.99999 15.4477 9.99999 16C9.99999 16.5523 9.55228 17 8.99999 17H7.04285C8.32433 18.2362 10.0899 19 12 19C15.5689 19 18.5153 16.3283 18.9458 12.8763C19.0141 12.3282 19.5138 11.9393 20.0618 12.0077Z"></path></svg>
+  </button>
+
   <label>Horizontal Offset Probability</label>
   <input type="range" id="horizontal-prob" min="0" max="1" step="0.01" value="0.5">
   <span id="horizontal-prob-value">0.5</span>
@@ -40,8 +52,6 @@
       <span class="slider"></span>
     </label>
   </div> 
-
-  <button id="refresh">Refresh</button>
 
   <a href="more-about-hitomezashi.html" target="_blank">Learn More</a>
 </div>

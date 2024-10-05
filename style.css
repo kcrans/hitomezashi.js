@@ -11,6 +11,7 @@ canvas {
   display: block;
   /*border: 1px solid black;*/
 }
+
 /* Toggle switch CSS */
 .switch {
   position: relative;
@@ -29,7 +30,7 @@ canvas {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #ccc;
+  background-color: #2D3740;
   transition: 0.4s;
   border-radius: 34px;
 }
@@ -39,7 +40,7 @@ canvas {
   content: "";
   height: 26px;
   width: 26px;
-  left: 4px;
+  left: 30px;
   bottom: 4px;
   background-color: white;
   transition: 0.4s;
@@ -47,15 +48,16 @@ canvas {
 }
 
 input:checked + .slider {
-  background-color: #2D3740;
+  background-color: #ccc;
 }
 
 input:checked + .slider:before {
-  transform: translateX(26px);
+  transform: translateX(-26px);
 }
-* {
+/* {
   outline: 1px solid red;
-}
+}*/
+
 /* Toolbar Toggle Button */
 #toolbar-toggle {
   position: fixed;
@@ -130,4 +132,51 @@ input[type="range"]::-moz-range-thumb {
   background: white;
   cursor: pointer;
   box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Style for the button */
+.icon-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Style for SVG icons */
+.icon-button svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor; /* Inherit the button's text color */
+}
+
+
+/* Style for the SVG icon */
+#refresh-icon {
+  width: 24px; /* Adjust size */
+  height: 24px;
+  fill: #fff; /* Set the icon color to white for contrast */
+}
+
+/* Style for the refresh button */
+.toolbar-icon-button {
+  background: none; /* Remove default background */
+  border: none; /* Remove default border */
+  color: inherit; /* Inherit the text color */
+  font: inherit; /* Inherit font styles */
+  padding: 10px; /* Add padding for the clickable area */
+  cursor: pointer; /* Show the pointer cursor */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(144, 144, 144, 0.9); /* Darker grey background */
+  border-radius: 8px; /* Rounded corners */
+  transition: background-color 0.3s; /* Smooth background color transition */
+}
+
+/* Hover effect for the button */
+.toolbar-icon-button:hover {
+  background-color: #555; /* Slightly darker on hover */
 }
